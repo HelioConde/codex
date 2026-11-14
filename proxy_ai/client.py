@@ -48,10 +48,10 @@ def normalize_base_url(base_url: str) -> str:
         raise ProxyError("URL do proxy invalida.") from None
     if p.scheme == "https" and p.hostname:
         pass
-    elif p.scheme == "http" and p.hostname == "127.0.0.1" and port == 18080:
+    elif p.scheme == "http" and p.hostname == "127.0.0.1" and port is not None and 1 <= port <= 65535:
         pass
     else:
-        raise ProxyError("Usar HTTPS ou http://127.0.0.1:18080 (job local).")
+        raise ProxyError("Usar HTTPS ou HTTP com porta explicita em 127.0.0.1 (local).")
     if p.username or p.password or p.query or p.fragment or p.path.rstrip("/") not in ("", "/v1"):
         raise ProxyError("URL deve conter apenas origem HTTPS (opcional /v1), sem credenciais ou query.")
     return urllib.parse.urlunsplit((p.scheme, p.netloc, "", "", ""))
@@ -144,8 +144,11 @@ class ProxyClient:
             with opener.open(req, timeout=self.timeout) as response:
                 data = response.read(max_size + 1)
         except urllib.error.HTTPError as exc:
+            exc.close()
             if exc.code == 429:
                 raise ProxyError("HTTP 429: limite/cota do proxy. Nao repetir automaticamente.") from None
+            if exc.code in (401, 403):
+                raise ProxyError(f"HTTP {exc.code}: falha de autenticacao/permissao; verificar credencial autorizada.") from None
             raise ProxyError(f"Proxy retornou HTTP {exc.code}; resposta ocultada.") from None
         except (urllib.error.URLError, TimeoutError, OSError):
             raise ProxyError("Falha ao conectar ao proxy; endereco e credenciais ocultados.") from None
@@ -176,27 +179,37 @@ class ProxyClient:
         return sorted({m["id"] for m in models if isinstance(m, dict) and isinstance(m.get("id"), str)})
 
     def text(self, prompt: str, *, model: str = "gpt-6.1-sol", instructions: str = "",
-             effort: str = "low") -> tuple[str, dict[str, Any]]:
+             effort: str = "low", max_output_tokens: int | None = None) -> tuple[str, dict[str, Any]]:
         if not isinstance(model, str) or not MODEL_RE.fullmatch(model):
             raise ProxyError("Identificador de modelo invalido.")
         if not isinstance(prompt, str) or not 1 <= len(prompt.strip()) <= MAX_INPUT_CHARS:
             raise ProxyError("Prompt vazio ou superior a 60 mil caracteres.")
         if not isinstance(instructions, str) or len(instructions) > MAX_INSTRUCTIONS_CHARS:
             raise ProxyError("Instrucoes longas demais (maximo 24 mil caracteres).")
+        if effort == 'ultra':
+            raise ProxyError('Ultra requer orquestracao nativa do Codex CLI; use proxy_ai.codex_cli run --task ultra.')
         if effort not in ("low", "medium", "high"):
             raise ProxyError("Reasoning effort invalido.")
+        if max_output_tokens is not None and (type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 32000):
+            raise ProxyError("max_output_tokens deve estar entre 1 e 32000.")
         payload: dict[str, Any] = {
             "model": model, "input": prompt, "stream": False,
             "reasoning": {"effort": effort},
         }
         if instructions.strip():
             payload["instructions"] = instructions
+        if max_output_tokens is not None:
+            payload["max_output_tokens"] = max_output_tokens
         response = self._json("/v1/responses", payload)
         usage = response.get("usage")
         if not isinstance(usage, dict):
             usage = {}
         safe_usage = {field: usage[field] for field in ("input_tokens", "output_tokens", "total_tokens")
                       if isinstance(usage.get(field), int) and usage[field] >= 0}
+        details = usage.get('input_tokens_details')
+        cached = details.get('cached_tokens') if isinstance(details, dict) else None
+        if type(cached) is int and 0 <= cached <= safe_usage.get('input_tokens', 0):
+            safe_usage['cached_input_tokens'] = cached
         return parse_response_text(response), safe_usage
 
     def image(self, prompt: str, path: Path, *, model: str = "gpt-image-2",

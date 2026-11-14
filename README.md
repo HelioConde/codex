@@ -3,7 +3,8 @@
 Repositório de **ideias, pesquisas e ferramentas reais** sobre uso eficiente do Codex e do proxy de IA compartilhado com VideoForge-IA, para roteiros, planejamento, análise e geração de imagens.
 
 **Atualizado em:** 14/11/2026  
-**Status:** cliente Python de IA de texto/imagem e workflow manual implementados; conexão com credenciais reais ainda pendente de validação. A produção de vídeo permanece no VideoForge-IA.  
+**Status:** proxy integrado a CLI 0.166.0 com Astra/Ultra como padrao do lancador, conforme escolha do usuario. Inferencias reais com Astra/Ultra e Sol/low validadas em 14/11/2026; perfis economicos, limites e workflow manual disponiveis. A produção de vídeo permanece no VideoForge-IA.
+
 **Projeto principal de execução:** [VideoForge-IA](https://github.com/HelioConde/VideoForge-IA).  
 **Projeto relacionado:** [AutoEditorVideo](https://github.com/HelioConde/AutoEditorVideo).
 
@@ -33,6 +34,23 @@ Se a chave ja estiver em CODEX_PROXY_API_KEY, retire -FromDocker; caso contrario
 
 Para usar o cliente localmente, configure CODEX_PROXY_BASE_URL e CODEX_PROXY_API_KEY no ambiente. O [workflow manual do GitHub](.github/workflows/proxy-ia-manual.yml) também oferece texto/imagens após configurar Secrets no repo `codex`. É possível usar o proxy como provider na CLI Codex por meio do [template de configuração global](config/codex-proxy.user.toml.example), sem inserir chaves no repositório. **O cliente Python usa modelos e cotas reais da conta; não fornece acesso ilimitado.**
 
+## Codex CLI com o proxy local
+
+Python 3.11+ e Codex CLI 0.166.0+. O instalador mescla o provider na configuracao global, faz backup e cria perfis V2 sem sobrescrever preferencias. A chave fica apenas no ambiente do processo. O Docker existente deve estar acessivel; nao depende do proxy efemero do Actions.
+
+```powershell
+# Nao geram IA nem consomem cota de inferencia:
+python -m proxy_ai.codex_cli check --from-docker
+python -m proxy_ai.codex_cli install --from-docker
+
+# Somente executar depois de autorizar consumo de cota:
+python -m proxy_ai.codex_cli run --from-docker --execute
+python -m proxy_ai.codex_cli run --from-docker --task simple --execute
+python -m proxy_ai.codex_cli run --from-docker --task critical --execute
+```
+
+`ultra` (padrao) usa Astra no modo Ultra nativo do Codex; `code`, Sol/medium; `complex`, Sol/high; `simple`, Luna/low; `critical`, Astra/high. Ultra inclui delegacao a subagentes; service tier permanece default. O provider original permanece disponivel; `.codex/config.toml` deste projeto seleciona Astra/Ultra. `--fallback-original` autoriza usar o provider original se o preflight falhar, antes da sessao; uma sessao com erro nunca e repetida. Consulte [o guia e as evidencias](docs/10-codex-cli-proxy.md) para perfis, rollback, limites, metricas e teste real.
+
 ## Índice de todas as ideias consolidadas
 
 1. [Visão geral e decisões](docs/00-visao-e-decisoes.md) — prioridades, decisões já discutidas e escopo.
@@ -43,7 +61,7 @@ Para usar o cliente localmente, configure CODEX_PROXY_BASE_URL e CODEX_PROXY_API
 6. [Ferramentas, preços estimados e direitos](docs/05-ferramentas-custos-direitos.md) — ComfyUI, Pika, Runway, Kling, Wan, Luma, TTS, referências oficiais e simulações de custo.
 7. [Roadmap e validação](docs/06-roadmap-e-validacao.md) — prioridades, gates, critérios objetivos, custos e pontos ainda em aberto.
 8. [Pesquisa em comunidades: economias reais no Astra/Codex](docs/07-pesquisa-comunidades-economia-astra.md) — TokenEconomizer, Lattice, cache, logs, subagentes, configurações e plano de medição.
-9. [Configuração experimental Codex CLI](.codex/config.toml) — Sol por padrão e limites iniciais de subagentes e ferramentas.
+9. [Configuração Codex CLI](.codex/config.toml) — Astra/Ultra por escolha do usuario e limites iniciais de subagentes e ferramentas.
 10. [Resumo local de tokens Codex](scripts/resumo_codex.py) e [testes de validação](tests/test_resumo_codex.py) — auditoria offline de contadores JSONL sem enviar prompts para a rede.
 11. [Integração do proxy como IA de texto e imagem](docs/08-proxy-ia-texto-codex.md) — cliente, Codex CLI, GitHub Actions, credenciais e limites.
 12. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
@@ -53,7 +71,7 @@ Para usar o cliente localmente, configure CODEX_PROXY_BASE_URL e CODEX_PROXY_API
 
 ## Regras essenciais
 
-- **Modelo econômico primeiro** para pauta, pesquisa, roteiro, prompts, storyboard e metadados; Codex/Astra só para engenharia que realmente exija o modelo caro.
+- **Astra/Ultra como engenheiro principal**, por escolha explicita do usuario em 14/11/2026; modelos economicos disponiveis para tarefas auxiliares, com contexto minimo e verificacao deterministica.
 - **Não tratar Ultrafast como economia:** verificar tabela de créditos vigente e evitar modo caro por padrão.
 - **Não repetir trabalho ou conteúdo:** pesquisar histórico de cada canal, reaproveitar resultados e impedir vídeos/temas duplicados.
 - **Imagem aprovada → camadas consistentes → rig real → Remotion.** Não mover um PNG inteiro quando olhos, cabelo, capa ou braços devem ter movimentos próprios.

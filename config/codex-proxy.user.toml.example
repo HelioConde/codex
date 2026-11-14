@@ -3,9 +3,10 @@
 # Nao sobrescreva configuracoes existentes nem copie uma chave real para este arquivo.
 # Troque apenas o dominio de exemplo pela URL HTTPS autorizada do proxy.
 
-model = "gpt-6.1-sol"
+model = "gpt-6-astra"
 model_provider = "videoforge_proxy"
-model_reasoning_effort = "low"
+model_reasoning_effort = "ultra"
+service_tier = "default"
 
 [model_providers.videoforge_proxy]
 name = "VideoForge Codex Proxy"
@@ -14,6 +15,15 @@ env_key = "CODEX_PROXY_API_KEY"
 wire_api = "responses"
 request_max_retries = 0
 stream_max_retries = 0
+supports_websockets = false
+requires_openai_auth = false
+stream_idle_timeout_ms = 120000
 
 # A integracao depende da versao Codex CLI, conta autorizada e compatibilidade do streaming.
 # Nao ativar Ultrafast nem contornar quotas/limites.
+# Validado estruturalmente com CLI 0.166.0 em 14/11/2026.
+# Preferir: python -m proxy_ai.codex_cli install --from-docker
+# O instalador preserva os defaults e cria vf_code.config.toml, vf_simple.config.toml,
+# vf_complex.config.toml, vf_critical.config.toml e vf_ultra.config.toml no CODEX_HOME.
+# Nesta versao NAO usar [profiles.vf_code] no config.toml (formato legado rejeitado).
+# Os defaults no inicio deste template sao alternativa manual; nao colar por cima do config existente.

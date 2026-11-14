@@ -2,6 +2,8 @@
 
 **Data:** 14/11/2026 · **Origem:** pesquisa aprofundada em GitHub, issues, Reddit, Hacker News e documentação oficial.
 
+**Decisao posterior do usuario em 14/11/2026:** Astra no modo **Ultra do seletor** e o objetivo principal. Ultra inclui delegacao a subagentes e e diferente de Ultrafast. O lancador e o projeto agora selecionam Astra/Ultra; as propostas economicas abaixo ficam preservadas como historico e opcoes auxiliares. Veja [configuracao e testes reais](10-codex-cli-proxy.md).
+
 ## Resumo executivo
 
 GPT-6 Astra é o modelo; **Ultrafast é um modo de velocidade**, não um segundo modelo chamado Astra Ultra. Referências oficiais citam uso incluído a 8× e créditos a 6× Standard em situações específicas de planos Pro/Enterprise. Isso **não significa** que esses fatores sejam a taxa da conta do usuário: verificar Settings → Usage. Para economia, não usar Ultrafast como padrão.

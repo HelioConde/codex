@@ -47,7 +47,7 @@ class ProxyAITests(unittest.TestCase):
     def test_url_validation(self):
         self.assertEqual(normalize_base_url("https://proxy.example.com/v1/"), "https://proxy.example.com")
         self.assertEqual(normalize_base_url("http://127.0.0.1:18080"), "http://127.0.0.1:18080")
-        for url in ("http://proxy.example.com", "http://127.0.0.1:8080",
+        for url in ("http://proxy.example.com", "http://127.0.0.1",
                     "https://user:pw@proxy.example.com", "https://proxy.example.com/a",
                     "https://proxy.example.com/?q=key", "file:///etc/passwd", ""):
             with self.subTest(url=url), self.assertRaises(ProxyError):
@@ -99,6 +99,36 @@ class ProxyAITests(unittest.TestCase):
         self.assertEqual(len(fake.requests), 1)
         self.assertNotIn(self.KEY, str(err.exception))
         self.assertNotIn("PRIVATE BODY", str(err.exception))
+
+    def test_auth_and_timeout_are_sanitized_without_retry(self):
+        client = ProxyClient('https://proxy.example.com', self.KEY, timeout=2)
+        for status in (401, 403):
+            fake = FakeOpener({}, status=status)
+            with patch('proxy_ai.client.urllib.request.build_opener', return_value=fake):
+                with self.assertRaisesRegex(ProxyError, 'autenticacao'):
+                    client.health()
+            self.assertEqual(len(fake.requests), 1)
+        with patch('proxy_ai.client.urllib.request.build_opener') as factory:
+            factory.return_value.open.side_effect = TimeoutError('private endpoint')
+            with self.assertRaises(ProxyError) as error:
+                client.health()
+            self.assertNotIn('private endpoint', str(error.exception))
+            self.assertEqual(factory.return_value.open.call_count, 1)
+
+    def test_cached_tokens_are_measured_separately(self):
+        client = ProxyClient('https://proxy.example.com', self.KEY)
+        with patch.object(client, '_json', return_value={
+            'output_text': 'ok', 'usage': {'input_tokens': 10, 'output_tokens': 2,
+                                        'input_tokens_details': {'cached_tokens': 7}}}):
+            _, usage = client.text('teste')
+        self.assertEqual(usage['cached_input_tokens'], 7)
+
+    def test_direct_client_does_not_misrepresent_ultra_orchestration(self):
+        client = ProxyClient('https://proxy.example.com', self.KEY)
+        with patch.object(client, '_json') as request:
+            with self.assertRaisesRegex(ProxyError, 'Codex CLI'):
+                client.text('teste', model='gpt-6-astra', effort='ultra')
+        request.assert_not_called()
 
     def test_health_and_models(self):
         client = ProxyClient("https://proxy.example.com", self.KEY)

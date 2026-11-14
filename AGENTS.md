@@ -11,11 +11,13 @@ Este repositório documenta economia de tokens e **implementa um cliente Python 
 5. Manter conteúdos de canais isolados; nunca repetir pauta, vídeo, arte ou prompt já aprovado sem justificativa.
 6. Proteger credenciais e dados privados. **Este repositório é público.** Nunca adicionar tokens, cookies, credenciais, payloads secretos ou dados pessoais sensíveis.
 7. Não iniciar chamadas de IA paga, contratar APIs nem criar workflows com cobrança recorrente sem política de custo e autorização.
-8. Não usar Astra/Ultrafast para tarefas rotineiras; modelo barato + testes determinísticos primeiro.
+8. Atualizacao explicita do usuario em 14/11/2026: usar Astra no modo Ultra como engenheiro principal pelo proxy. Manter economia em contexto, ferramentas deterministicas e auxiliares; nao ativar Ultrafast automaticamente. Ultra e o modo nativo de raciocinio/delegacao do Codex.
 9. Não substituir **animação articulada** por movimentação do PNG inteiro quando a especificação exige rig.
 10. As chamadas de `proxy_ai text` e `proxy_ai image` somente ocorrem com `--execute`; não gerar conteúdo em CI/push ou testes.
 11. O proxy não é API oficial do Codex; respeitar autorização e limites, não usar contas de terceiros, não automatizar reintentos após HTTP 429.
 12. Em uma alteração: preservar links e decisões anteriores; acrescentar data, fonte e justificativa; validar Markdown e referências.
+13. CLI 0.166.0 usa perfis V2 em `<nome>.config.toml` no CODEX_HOME; nao inserir tabelas legadas `[profiles]`. Usar `python -m proxy_ai.codex_cli check/install/run`; `run` exige `--execute` e usa Astra/Ultra por padrao. Preservar backup e provider OpenAI original. Ultra deve ser executado pela CLI, nao como campo literal de uma chamada Python de texto sem orquestracao.
+14. Fallback somente no preflight e com `--fallback-original`; nunca reenviar tarefa apos iniciar inferencia. Limites de TaskRunner sao de tokens API observados, nao de creditos nem teto garantido de faturamento. Aprovacao de resultado so depois de revisao.
 
 ## Documentos
 
@@ -30,3 +32,4 @@ Este repositório documenta economia de tokens e **implementa um cliente Python 
 - [08 — Integrar IA de texto e imagem via proxy VideoForge](docs/08-proxy-ia-texto-codex.md)
 - [Configuração experimental Codex CLI](.codex/config.toml)
 - [Template global para usar proxy como provider Codex](config/codex-proxy.user.toml.example)
+- [10 — Codex CLI, perfis V2 e evidencias locais](docs/10-codex-cli-proxy.md)
