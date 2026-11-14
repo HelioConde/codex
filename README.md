@@ -24,7 +24,8 @@ O foco desta documentação é **YouTube — imagens, personagens, rig 2D, anima
 7. [Roadmap e validação](docs/06-roadmap-e-validacao.md) — prioridades, gates, critérios objetivos, custos e pontos ainda em aberto.
 8. [Pesquisa em comunidades: economias reais no Astra/Codex](docs/07-pesquisa-comunidades-economia-astra.md) — TokenEconomizer, Lattice, cache, logs, subagentes, configurações e plano de medição.
 9. [Configuração experimental Codex CLI](.codex/config.toml) — Sol por padrão e limites iniciais de subagentes e ferramentas.
-10. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
+10. [Resumo local de tokens Codex](scripts/resumo_codex.py) e [testes de validação](tests/test_resumo_codex.py) — auditoria offline de contadores JSONL sem enviar prompts para a rede.
+11. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
 
 ## Regras essenciais
 
