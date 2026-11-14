@@ -24,3 +24,5 @@ Este repositório guarda **documentação estratégica** sobre economia de token
 - [04 — Rig e Remotion](docs/04-animacao-rig-remotion.md)
 - [05 — Ferramentas, custos e direitos](docs/05-ferramentas-custos-direitos.md)
 - [06 — Roadmap e validação](docs/06-roadmap-e-validacao.md)
+- [07 — Pesquisa em repositórios e comunidades sobre economia Astra](docs/07-pesquisa-comunidades-economia-astra.md)
+- [Configuração experimental Codex CLI](.codex/config.toml)
