@@ -1,0 +1,202 @@
+name: Codex - Proxy IA (manual, texto e imagem)
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'health/models nao geram conteudo; text/image podem consumir cota'
+        type: choice
+        options: [health, models, text, image]
+        required: true
+        default: health
+      mode:
+        description: 'persistent = URL HTTPS; ephemeral = imagem GHCR + secret de contas'
+        type: choice
+        options: [persistent, ephemeral]
+        required: true
+        default: persistent
+      execute:
+        description: 'CONFIRMO chamada de IA (exige true para text/image)'
+        type: boolean
+        default: false
+        required: true
+      prompt:
+        description: 'APENAS texto nao sensivel; inputs sao visiveis no historico Actions'
+        type: string
+        required: false
+        default: ''
+      model:
+        description: 'Modelo de texto disponivel em /v1/models'
+        type: string
+        required: true
+        default: 'gpt-6.1-sol'
+      image_size:
+        description: 'Tamanho de imagem'
+        type: choice
+        options: [1024x1024, 1024x1536, 1536x1024]
+        default: 1024x1024
+        required: true
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: codex-proxy-ia-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  executar:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CODEX_PROXY_API_KEY: ${{ secrets.CODEX_PROXY_API_KEY }}
+      CODEX_PROXY_BASE_URL: ${{ secrets.CODEX_PROXY_BASE_URL }}
+      CODEX_PROXY_ACCOUNTS_JSON: ${{ secrets.CODEX_PROXY_ACCOUNTS_JSON }}
+      PROXY_MODE: ${{ inputs.mode }}
+      TASK_OPERATION: ${{ inputs.operation }}
+      TASK_EXECUTE: ${{ inputs.execute }}
+      TASK_PROMPT: ${{ inputs.prompt }}
+      TASK_MODEL: ${{ inputs.model }}
+      TASK_IMAGE_SIZE: ${{ inputs.image_size }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validar autorizacao e secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$CODEX_PROXY_API_KEY" ]]; then
+            echo '::error::Configure CODEX_PROXY_API_KEY no repositorio codex.'
+            exit 1
+          fi
+          if [[ "$TASK_OPERATION" == text || "$TASK_OPERATION" == image ]]; then
+            if [[ "$TASK_EXECUTE" != true || -z "$TASK_PROMPT" ]]; then
+              echo '::error::Text/image exige execute=true e prompt.'
+              exit 1
+            fi
+          fi
+          if [[ "$PROXY_MODE" == persistent ]]; then
+            if [[ -z "$CODEX_PROXY_BASE_URL" ]]; then
+              echo '::error::Configure CODEX_PROXY_BASE_URL (HTTPS).'
+              exit 1
+            fi
+            printf 'PROXY_ENDPOINT=%s\n' "$CODEX_PROXY_BASE_URL" >> "$GITHUB_ENV"
+          elif [[ "$PROXY_MODE" == ephemeral ]]; then
+            if [[ -z "$CODEX_PROXY_ACCOUNTS_JSON" ]]; then
+              echo '::error::Configure CODEX_PROXY_ACCOUNTS_JSON no repositorio codex.'
+              exit 1
+            fi
+            echo 'PROXY_ENDPOINT=http://127.0.0.1:18080' >> "$GITHUB_ENV"
+          else
+            echo '::error::Modo do proxy invalido.'
+            exit 1
+          fi
+      - name: Criar estado privado temporario do proxy
+        if: inputs.mode == 'ephemeral'
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/codex-proxy-state"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          try:
+              state = json.loads(os.environ['CODEX_PROXY_ACCOUNTS_JSON'])
+              if not isinstance(state, dict) or not isinstance(state.get('records'), list) or not state['records']:
+                  raise ValueError()
+              if not all(isinstance(x, dict) and isinstance(x.get('token'), dict) for x in state['records']):
+                  raise ValueError()
+              p = Path(os.environ['RUNNER_TEMP']) / 'codex-proxy-state' / 'accounts.json'
+              p.write_text(json.dumps(state), encoding='utf-8')
+              p.chmod(0o600)
+          except (ValueError, TypeError):
+              raise SystemExit('Secret CODEX_PROXY_ACCOUNTS_JSON invalido.')
+          PY
+      - name: Iniciar imagem GHCR do VideoForge (sem compilar)
+        if: inputs.mode == 'ephemeral'
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin >/dev/null
+          docker pull ghcr.io/helioconde/videoforge-codex-proxy:upstream-02f8ce3581c1
+          docker run -d --name codex-proxy-job \
+            --user "$(id -u):$(id -g)" \
+            --read-only --tmpfs /tmp:rw,nosuid,size=32m \
+            --cap-drop ALL --security-opt no-new-privileges \
+            -p 127.0.0.1:18080:8080 \
+            -e PROXY_API_KEY="$CODEX_PROXY_API_KEY" \
+            -e DATA_DIR=/app/data -e DEBUG_LOG_PAYLOADS=false \
+            -v "$RUNNER_TEMP/codex-proxy-state:/app/data:rw" \
+            ghcr.io/helioconde/videoforge-codex-proxy:upstream-02f8ce3581c1 >/dev/null
+          for i in {1..30}; do
+            if curl -fsS --max-time 2 http://127.0.0.1:18080/health/live >/dev/null; then
+              echo 'Proxy temporario iniciado.'
+              exit 0
+            fi
+            sleep 2
+          done
+          echo '::error::Proxy nao iniciou.'
+          exit 1
+      - name: Health autenticado (sem gerar conteudo)
+        shell: bash
+        run: |
+          set -euo pipefail
+          CODEX_PROXY_BASE_URL="$PROXY_ENDPOINT" python -m proxy_ai health
+      - name: Listar modelos
+        if: inputs.operation == 'models'
+        shell: bash
+        run: |
+          CODEX_PROXY_BASE_URL="$PROXY_ENDPOINT" python -m proxy_ai models
+      - name: Preparar prompt sem exibir texto
+        if: inputs.operation == 'text' || inputs.operation == 'image'
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          Path(os.environ['RUNNER_TEMP'], 'codex-ai-prompt.txt').write_text(os.environ['TASK_PROMPT'], encoding='utf-8')
+          PY
+          mkdir -p "$RUNNER_TEMP/codex-ai-output"
+      - name: IA de texto para roteiro, planejamento, analise e codigo
+        if: inputs.operation == 'text' && inputs.execute == true
+        shell: bash
+        run: |
+          set -euo pipefail
+          CODEX_PROXY_BASE_URL="$PROXY_ENDPOINT" python -m proxy_ai text \
+            --prompt-file "$RUNNER_TEMP/codex-ai-prompt.txt" \
+            --model "$TASK_MODEL" --effort low \
+            --output "$RUNNER_TEMP/codex-ai-output/resposta.txt" --execute
+      - name: IA de imagem (uma por requisicao)
+        if: inputs.operation == 'image' && inputs.execute == true
+        shell: bash
+        run: |
+          set -euo pipefail
+          CODEX_PROXY_BASE_URL="$PROXY_ENDPOINT" python -m proxy_ai image \
+            --prompt-file "$RUNNER_TEMP/codex-ai-prompt.txt" \
+            --size "$TASK_IMAGE_SIZE" \
+            --output "$RUNNER_TEMP/codex-ai-output/imagem" --execute
+      - name: Arquivar resultado por um dia (nao publica no YouTube)
+        if: (inputs.operation == 'text' || inputs.operation == 'image') && inputs.execute == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-proxy-ia-${{ github.run_id }}
+          path: ${{ runner.temp }}/codex-ai-output/
+          retention-days: 1
+          if-no-files-found: error
+      - name: Apagar credenciais e prompt temporarios
+        if: always()
+        shell: bash
+        run: |
+          docker rm -f codex-proxy-job >/dev/null 2>&1 || true
+          rm -rf "$RUNNER_TEMP/codex-proxy-state" "$RUNNER_TEMP/codex-ai-prompt.txt" "$RUNNER_TEMP/codex-ai-output"
