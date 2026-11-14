@@ -3,7 +3,7 @@
 Repositório de **ideias, pesquisas e ferramentas reais** sobre uso eficiente do Codex e do proxy de IA compartilhado com VideoForge-IA, para roteiros, planejamento, análise e geração de imagens.
 
 **Atualizado em:** 14/11/2026  
-**Status:** cliente Python, perfis globais Codex CLI 0.166.0, selecao economica e workflow manual implementados. Health/catalogo locais e streaming simulado verificados; inferencia real da CLI depende de autorizacao. A produção de vídeo permanece no VideoForge-IA.
+**Status:** cliente Python, perfis globais Codex CLI 0.166.0, selecao economica e workflow manual implementados. Health/catalogo locais e inferencia real da CLI com Sol/low validados em 14/11/2026; detalhes e limites no guia tecnico. A produção de vídeo permanece no VideoForge-IA.
 
 **Projeto principal de execução:** [VideoForge-IA](https://github.com/HelioConde/VideoForge-IA).  
 **Projeto relacionado:** [AutoEditorVideo](https://github.com/HelioConde/AutoEditorVideo).

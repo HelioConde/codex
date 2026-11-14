@@ -2,7 +2,7 @@
 
 **Atualizado:** 14/11/2026. **Status:** cliente e workflow implementados; credenciais e verificacao live ainda dependem do proprietario.
 
-**Atualizacao local de 14/11/2026:** health e catalogo do Docker foram verificados; provider/perfis V2 para CLI 0.166.0 e lancador com preflight foram implementados. O [guia de execucao e evidencias](10-codex-cli-proxy.md) atualiza o estado operacional e o formato dos perfis. As secoes abaixo preservam a integracao original; seu status pendente descreve o registro anterior, nao invalida as evidencias datadas do novo guia. Inferencia real da CLI ainda requer autorizacao.
+**Atualizacao local de 14/11/2026:** health e catalogo do Docker foram verificados; provider/perfis V2 para CLI 0.166.0 e lancador com preflight foram implementados. Apos autorizacao explicita, a CLI realizou inferencia real com Sol/low e validou a funcao Python solicitada. O [guia de execucao e evidencias](10-codex-cli-proxy.md) registra consumo e limites. As secoes abaixo preservam a integracao original; seu status pendente descreve o registro anterior, nao invalida as evidencias datadas do novo guia.
 
 ## O que foi implementado
 

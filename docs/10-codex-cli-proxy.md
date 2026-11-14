@@ -77,11 +77,20 @@ Classificacao explicita e deterministica evita uma inferencia extra somente para
 - CLI 0.166.0: perfil V2 aceito em `debug prompt-input`, sem inferencia; nao publicar o prompt interno.
 - CLI real contra servidor SSE simulado: uma requisicao `/v1/responses`, bearer de teste, stream=true, Sol, resposta MOCK_OK. Demonstra protocolo da CLI, nao inferencia pelo proxy real.
 - CLI real contra HTTP 429 e 401 simulados: encerrou com erro depois de uma unica requisicao em cada caso, sem retry.
-- CI da implementacao: [execucao offline 43603791906](https://github.com/HelioConde/codex/actions/runs/43603791906) concluiu success. Alteracoes publicadas na [PR draft #1](https://github.com/HelioConde/codex/pull/1), sem merge enquanto a validacao real permanece pendente.
+- CI da implementacao: [execucao offline 43603791906](https://github.com/HelioConde/codex/actions/runs/43603791906) concluiu success. Alteracoes publicadas na [PR #1](https://github.com/HelioConde/codex/pull/1).
 - Proxy Docker real: GET `/health` HTTP 200, status ok, uma conta configurada; GET `/v1/models` inclui gpt-6-luna, gpt-6.1-sol, gpt-6-astra. Nenhuma inferencia nesses GETs.
 - Actions anteriores confirmadas success: [health 43601574401](https://github.com/HelioConde/codex/actions/runs/43601574401), [models 43601760640](https://github.com/HelioConde/codex/actions/runs/43601760640), [texto 43601944682](https://github.com/HelioConde/codex/actions/runs/43601944682). O pedido relata 17 tokens de entrada e 10 de saida nessa inferencia Astra; nao e medicao nova desta implementacao.
 
-**Pendente:** teste real curto pela CLI Sol, com autorizacao, para comprovar SSE do proxy e comportamento do modelo. Sem esse teste nao declarar os criterios integralmente atendidos. Nao ha percentual de economia medido nem conversao confiavel de tokens em creditos.
+**Inferencia real validada em 14/11/2026:** depois de autorizacao explicita do proprietario, `python -m scripts.smoke_codex_proxy --execute` encerrou com codigo 0 usando CLI 0.166.0, gpt-6.1-sol, esforco low e o proxy Docker existente. A funcao soma retornada correspondeu a AST esperada, sem executar codigo gerado. Isso comprova uma tarefa curta de geracao de codigo pelo transporte nativo da CLI; nao comprova qualidade em problemas complexos ou todas as ferramentas/agentes/modelos.
+
+| Medicao informada pela CLI | Tokens |
+|---|---:|
+| Entrada total (inclui cache) | 12335 |
+| Entrada em cache (subconjunto) | 9344 |
+| Entrada fora do cache (diferenca calculada) | 2991 |
+| Saida | 15 |
+
+Creditos da assinatura: desconhecidos. Nenhum percentual de economia foi medido. A entrada elevada para uma funcao pequena evidencia o custo do contexto interno da CLI; tarefas textuais simples podem usar o cliente direto/TaskRunner para evitar esse contexto, mas essa alternativa ainda nao teve comparacao pareada nesta implementacao. O teste nao realizou imagens nem chamadas Astra. Fallback, 401/429 e limites permanecem validados em simulacao, sem provocar falhas reais deliberadas.
 
 O teste esta preparado em [scripts/smoke_codex_proxy.py](../scripts/smoke_codex_proxy.py). `python -m scripts.smoke_codex_proxy` apenas informa o gate, sem acessar Docker/rede. **Somente apos autorizar cota**, `python -m scripts.smoke_codex_proxy --execute` abre uma sessao CLI isolada/efemera Sol/low com timeout de 120 s e sem retries, pede uma funcao soma sem ferramentas e compara sua AST sem executar codigo gerado. Imprime apenas validacao e contadores numericos, nunca logs internos. O prompt pede uma resposta unica; o ciclo interno da CLI nao e um teto garantido de requisicoes/tokens. Creditos de assinatura permanecem desconhecidos. Nao executar esse comando gerativo no CI.
 
