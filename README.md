@@ -23,7 +23,15 @@ python -m proxy_ai models
 python -m proxy_ai text --prompt-file outputs/brief.txt --execute
 ```
 
-Para executar, configure localmente `CODEX_PROXY_BASE_URL` e `CODEX_PROXY_API_KEY` e leia o [guia de integração](docs/08-proxy-ia-texto-codex.md). O [workflow manual do GitHub](.github/workflows/proxy-ia-manual.yml) também oferece texto/imagens após configurar Secrets no repo `codex`. É possível usar o proxy como provider na CLI Codex por meio do [template de configuração global](config/codex-proxy.user.toml.example), sem inserir chaves no repositório. **O cliente Python usa modelos e cotas reais da conta; não fornece acesso ilimitado.**
+Como o VideoForge-IA ja usa um servidor persistente, **reutilize-o em vez de copiar accounts.json**. O [script PowerShell de configuracao](scripts/configurar-proxy-existente.ps1) cadastra de forma protegida os dois Secrets necessarios ao repo codex usando gh autenticado e verifica /health antes de gravar:
+
+```powershell
+.\scripts\configurar-proxy-existente.ps1 -ProxyUrl 'https://SEU-ENDERECO-HTTPS' -FromDocker
+```
+
+Se a chave ja estiver em CODEX_PROXY_API_KEY, retire -FromDocker; caso contrario, a chave sera solicitada sem eco no terminal. **GitHub Actions nao consegue acessar localhost do seu computador**; o servidor precisa estar acessivel por HTTPS ao runner. Consulte o [guia de integracao](docs/08-proxy-ia-texto-codex.md).
+
+Para usar o cliente localmente, configure CODEX_PROXY_BASE_URL e CODEX_PROXY_API_KEY no ambiente. O [workflow manual do GitHub](.github/workflows/proxy-ia-manual.yml) também oferece texto/imagens após configurar Secrets no repo `codex`. É possível usar o proxy como provider na CLI Codex por meio do [template de configuração global](config/codex-proxy.user.toml.example), sem inserir chaves no repositório. **O cliente Python usa modelos e cotas reais da conta; não fornece acesso ilimitado.**
 
 ## Índice de todas as ideias consolidadas
 
