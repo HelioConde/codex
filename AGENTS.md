@@ -16,6 +16,8 @@ Este repositório documenta economia de tokens e **implementa um cliente Python 
 10. As chamadas de `proxy_ai text` e `proxy_ai image` somente ocorrem com `--execute`; não gerar conteúdo em CI/push ou testes.
 11. O proxy não é API oficial do Codex; respeitar autorização e limites, não usar contas de terceiros, não automatizar reintentos após HTTP 429.
 12. Em uma alteração: preservar links e decisões anteriores; acrescentar data, fonte e justificativa; validar Markdown e referências.
+13. CLI 0.166.0 usa perfis V2 em `<nome>.config.toml` no CODEX_HOME; nao inserir tabelas legadas `[profiles]`. Usar `python -m proxy_ai.codex_cli check/install/run`; `run` exige `--execute` e usa Sol por padrao. Preservar backup e configuracao OpenAI original.
+14. Fallback somente no preflight e com `--fallback-original`; nunca reenviar tarefa apos iniciar inferencia. Limites de TaskRunner sao de tokens API observados, nao de creditos nem teto garantido de faturamento. Aprovacao de resultado so depois de revisao.
 
 ## Documentos
 
@@ -30,3 +32,4 @@ Este repositório documenta economia de tokens e **implementa um cliente Python 
 - [08 — Integrar IA de texto e imagem via proxy VideoForge](docs/08-proxy-ia-texto-codex.md)
 - [Configuração experimental Codex CLI](.codex/config.toml)
 - [Template global para usar proxy como provider Codex](config/codex-proxy.user.toml.example)
+- [10 — Codex CLI, perfis V2 e evidencias locais](docs/10-codex-cli-proxy.md)

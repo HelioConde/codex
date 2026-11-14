@@ -2,6 +2,8 @@
 
 **Atualizado:** 14/11/2026. **Status:** cliente e workflow implementados; credenciais e verificacao live ainda dependem do proprietario.
 
+**Atualizacao local de 14/11/2026:** health e catalogo do Docker foram verificados; provider/perfis V2 para CLI 0.166.0 e lancador com preflight foram implementados. O [guia de execucao e evidencias](10-codex-cli-proxy.md) atualiza o estado operacional e o formato dos perfis. As secoes abaixo preservam a integracao original; seu status pendente descreve o registro anterior, nao invalida as evidencias datadas do novo guia. Inferencia real da CLI ainda requer autorizacao.
+
 ## O que foi implementado
 
 O repo `HelioConde/codex` agora pode reutilizar o proxy de `HelioConde/VideoForge-IA` para **planejamento, roteiros, pesquisa guiada por contexto fornecido, prompts, JSON de cenas, analise de erros, revisao de codigo e geracao de imagens**. O cliente fala diretamente com:

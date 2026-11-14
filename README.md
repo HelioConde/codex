@@ -3,7 +3,8 @@
 Repositório de **ideias, pesquisas e ferramentas reais** sobre uso eficiente do Codex e do proxy de IA compartilhado com VideoForge-IA, para roteiros, planejamento, análise e geração de imagens.
 
 **Atualizado em:** 14/11/2026  
-**Status:** cliente Python de IA de texto/imagem e workflow manual implementados; conexão com credenciais reais ainda pendente de validação. A produção de vídeo permanece no VideoForge-IA.  
+**Status:** cliente Python, perfis globais Codex CLI 0.166.0, selecao economica e workflow manual implementados. Health/catalogo locais e streaming simulado verificados; inferencia real da CLI depende de autorizacao. A produção de vídeo permanece no VideoForge-IA.
+
 **Projeto principal de execução:** [VideoForge-IA](https://github.com/HelioConde/VideoForge-IA).  
 **Projeto relacionado:** [AutoEditorVideo](https://github.com/HelioConde/AutoEditorVideo).
 
@@ -32,6 +33,23 @@ Como o VideoForge-IA ja usa um servidor persistente, **reutilize-o em vez de cop
 Se a chave ja estiver em CODEX_PROXY_API_KEY, retire -FromDocker; caso contrario, a chave sera solicitada sem eco no terminal. **GitHub Actions nao consegue acessar localhost do seu computador**; o servidor precisa estar acessivel por HTTPS ao runner. Consulte o [guia de integracao](docs/08-proxy-ia-texto-codex.md).
 
 Para usar o cliente localmente, configure CODEX_PROXY_BASE_URL e CODEX_PROXY_API_KEY no ambiente. O [workflow manual do GitHub](.github/workflows/proxy-ia-manual.yml) também oferece texto/imagens após configurar Secrets no repo `codex`. É possível usar o proxy como provider na CLI Codex por meio do [template de configuração global](config/codex-proxy.user.toml.example), sem inserir chaves no repositório. **O cliente Python usa modelos e cotas reais da conta; não fornece acesso ilimitado.**
+
+## Codex CLI com o proxy local
+
+Python 3.11+ e Codex CLI 0.166.0+. O instalador mescla o provider na configuracao global, faz backup e cria perfis V2 sem sobrescrever preferencias. A chave fica apenas no ambiente do processo. O Docker existente deve estar acessivel; nao depende do proxy efemero do Actions.
+
+```powershell
+# Nao geram IA nem consomem cota de inferencia:
+python -m proxy_ai.codex_cli check --from-docker
+python -m proxy_ai.codex_cli install --from-docker
+
+# Somente executar depois de autorizar consumo de cota:
+python -m proxy_ai.codex_cli run --from-docker --execute
+python -m proxy_ai.codex_cli run --from-docker --task simple --execute
+python -m proxy_ai.codex_cli run --from-docker --task critical --execute
+```
+
+`code` (padrao) usa Sol/medium; `complex`, Sol/high; `simple`, Luna/low; `critical`, Astra/high. Nao ha escalada automatica nem Ultrafast. O comando `codex` original preserva a configuracao anterior. `--fallback-original` autoriza usa-la somente se o preflight falhar, antes da sessao; uma sessao com erro nunca e repetida. Consulte [o guia e as evidencias](docs/10-codex-cli-proxy.md) para perfis, rollback, limites, metricas e teste real.
 
 ## Índice de todas as ideias consolidadas
 

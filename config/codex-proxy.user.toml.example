@@ -14,6 +14,15 @@ env_key = "CODEX_PROXY_API_KEY"
 wire_api = "responses"
 request_max_retries = 0
 stream_max_retries = 0
+supports_websockets = false
+requires_openai_auth = false
+stream_idle_timeout_ms = 120000
 
 # A integracao depende da versao Codex CLI, conta autorizada e compatibilidade do streaming.
 # Nao ativar Ultrafast nem contornar quotas/limites.
+# Validado estruturalmente com CLI 0.166.0 em 14/11/2026.
+# Preferir: python -m proxy_ai.codex_cli install --from-docker
+# O instalador preserva os defaults e cria vf_code.config.toml, vf_simple.config.toml,
+# vf_complex.config.toml e vf_critical.config.toml no CODEX_HOME.
+# Nesta versao NAO usar [profiles.vf_code] no config.toml (formato legado rejeitado).
+# Os defaults no inicio deste template sao alternativa manual; nao colar por cima do config existente.
