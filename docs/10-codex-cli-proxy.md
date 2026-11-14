@@ -77,6 +77,7 @@ Classificacao explicita e deterministica evita uma inferencia extra somente para
 - CLI 0.166.0: perfil V2 aceito em `debug prompt-input`, sem inferencia; nao publicar o prompt interno.
 - CLI real contra servidor SSE simulado: uma requisicao `/v1/responses`, bearer de teste, stream=true, Sol, resposta MOCK_OK. Demonstra protocolo da CLI, nao inferencia pelo proxy real.
 - CLI real contra HTTP 429 e 401 simulados: encerrou com erro depois de uma unica requisicao em cada caso, sem retry.
+- CI da implementacao: [execucao offline 43603791906](https://github.com/HelioConde/codex/actions/runs/43603791906) concluiu success. Alteracoes publicadas na [PR draft #1](https://github.com/HelioConde/codex/pull/1), sem merge enquanto a validacao real permanece pendente.
 - Proxy Docker real: GET `/health` HTTP 200, status ok, uma conta configurada; GET `/v1/models` inclui gpt-6-luna, gpt-6.1-sol, gpt-6-astra. Nenhuma inferencia nesses GETs.
 - Actions anteriores confirmadas success: [health 43601574401](https://github.com/HelioConde/codex/actions/runs/43601574401), [models 43601760640](https://github.com/HelioConde/codex/actions/runs/43601760640), [texto 43601944682](https://github.com/HelioConde/codex/actions/runs/43601944682). O pedido relata 17 tokens de entrada e 10 de saida nessa inferencia Astra; nao e medicao nova desta implementacao.
 
