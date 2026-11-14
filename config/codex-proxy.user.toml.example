@@ -1,0 +1,19 @@
+# Mesclar em ~/.codex/config.toml (Windows: %USERPROFILE%\.codex\config.toml)
+# O provider customizado deve ficar na configuracao GLOBAL do usuario.
+# Nao sobrescreva configuracoes existentes nem copie uma chave real para este arquivo.
+# Troque apenas o dominio de exemplo pela URL HTTPS autorizada do proxy.
+
+model = "gpt-6.1-sol"
+model_provider = "videoforge_proxy"
+model_reasoning_effort = "low"
+
+[model_providers.videoforge_proxy]
+name = "VideoForge Codex Proxy"
+base_url = "https://seu-proxy.example.com/v1"
+env_key = "CODEX_PROXY_API_KEY"
+wire_api = "responses"
+request_max_retries = 0
+stream_max_retries = 0
+
+# A integracao depende da versao Codex CLI, conta autorizada e compatibilidade do streaming.
+# Nao ativar Ultrafast nem contornar quotas/limites.
