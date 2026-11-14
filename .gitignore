@@ -1,0 +1,12 @@
+# Respostas, imagens e dados locais
+outputs/
+output/
+*.session.jsonl
+*.secrets.json
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
