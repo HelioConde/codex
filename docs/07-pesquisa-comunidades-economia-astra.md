@@ -97,3 +97,18 @@ São controles documentados pela [referência oficial](https://learn.chatgpt.com
 - [Issue: sessão retomada após longa pausa](https://github.com/openai/codex/issues/56050)
 
 **Pendente:** medir consumo real da conta; testar A/B; avaliar ferramentas terceiras; melhorar AGENTS sem perder manual; adaptar o proxy existente com limites reais mediante nova revisão; nenhuma geração de vídeo nem cobrança foi acionada nesta aplicação.
+
+## Medição local opcional, sem plugins pagos
+
+Este repositório inclui [scripts/resumo_codex.py](../scripts/resumo_codex.py), um resumo **offline** de sessões JSONL do Codex. Não lê para fora nem publica mensagens/prompt; contabiliza apenas os campos de uso e considera o maior contador cumulativo por arquivo para evitar somar snapshots repetidos. Requer Python 3.10+ e usa somente biblioteca padrão.
+
+~~~bash
+# A partir da raiz do repo codex, no computador que possui as sessões
+python scripts/resumo_codex.py --json
+# Ou indicar uma pasta local específica
+python scripts/resumo_codex.py "/caminho/local/codex/sessions"
+# Testes sem conexão e com fixtures artificiais
+python -m unittest discover -s tests -v
+~~~
+
+Limitações: o Codex pode alterar o formato de JSONL; reinícios de contadores dentro do mesmo arquivo podem exigir tratamento adicional; chamadas sem evento cumulativo ficam ausentes; esta ferramenta **não calcula valor em dinheiro, quota de assinatura ou custo real da API**. Não adicionar seus arquivos JSONL reais ao GitHub. Guardar apenas agregados e resultados dos testes aprovados.
