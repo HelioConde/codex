@@ -186,6 +186,8 @@ class ProxyClient:
             raise ProxyError("Prompt vazio ou superior a 60 mil caracteres.")
         if not isinstance(instructions, str) or len(instructions) > MAX_INSTRUCTIONS_CHARS:
             raise ProxyError("Instrucoes longas demais (maximo 24 mil caracteres).")
+        if effort == 'ultra':
+            raise ProxyError('Ultra requer orquestracao nativa do Codex CLI; use proxy_ai.codex_cli run --task ultra.')
         if effort not in ("low", "medium", "high"):
             raise ProxyError("Reasoning effort invalido.")
         if max_output_tokens is not None and (type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 32000):

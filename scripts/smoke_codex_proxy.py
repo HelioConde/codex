@@ -1,4 +1,4 @@
-"""Smoke test Sol opt-in: python -m scripts.smoke_codex_proxy --execute.
+"""Smoke test opt-in: python -m scripts.smoke_codex_proxy --task ultra --execute.
 
 Usa Docker autorizado existente. Sem flag nao consulta nem o Docker.
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 
-from proxy_ai.codex_cli import check_cli, install_config, load_client
+from proxy_ai.codex_cli import TIERS, check_cli, install_config, load_client
 from proxy_ai.client import ProxyError
 
 
@@ -26,25 +26,30 @@ def valid_sum(source: str) -> bool:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--execute', action='store_true', help='Autoriza consumo de cota da CLI Sol')
+    parser.add_argument('--execute', action='store_true', help='Autoriza consumo de cota da CLI')
+    parser.add_argument('--task', choices=TIERS, default='code')
     args = parser.parse_args(argv)
+    model, effort = TIERS[args.task]
+    # Preservar o teste Sol/low original; demais perfis usam seu esforco exato.
+    if args.task == 'code':
+        effort = 'low'
     if not args.execute:
-        print('Nenhuma chamada realizada. --execute autoriza teste real Sol/low (cota e creditos desconhecidos).')
+        print(f'Nenhuma chamada realizada. --execute autoriza {model}/{effort} (cota e creditos desconhecidos).')
         return 0
     try:
         version = check_cli()
         client = load_client(argparse.Namespace(base_url=None, from_docker=True,
                             container='chatgpt-codex-proxy', timeout=10))
         client.health()
-        if 'gpt-6.1-sol' not in client.models():
-            raise ProxyError('Sol indisponivel.')
+        if model not in client.models():
+            raise ProxyError('Modelo selecionado indisponivel.')
         with tempfile.TemporaryDirectory(prefix='codex-proxy-smoke-') as tmp:
             home = Path(tmp) / 'home'
             install_config(home / 'config.toml', client.base_url)
             env = os.environ.copy()
             env.update({'CODEX_HOME': str(home), 'CODEX_PROXY_API_KEY': client._api_key})
             completed = subprocess.run(
-                ['codex', 'exec', '-p', 'vf_code', '-c', 'model_reasoning_effort="low"',
+                ['codex', 'exec', '-p', 'vf_' + args.task, '-c', 'model_reasoning_effort=' + json.dumps(effort),
                  '--ephemeral', '--json', '--skip-git-repo-check', '--sandbox', 'read-only', '-'],
                 input=b'Return ONLY Python code: def soma(a, b) with return a + b. No markdown. Do not use tools.',
                 capture_output=True, cwd=tmp, env=env, timeout=120)
@@ -58,7 +63,7 @@ def main(argv=None) -> int:
             usage = {k: v for k, v in (usage or {}).items()
                      if k in ('input_tokens', 'output_tokens', 'cached_input_tokens') and type(v) is int and v >= 0}
             passed = bool(messages) and valid_sum(messages[-1])
-            print(json.dumps({'cli': version, 'model': 'gpt-6.1-sol', 'effort': 'low',
+            print(json.dumps({'cli': version, 'model': model, 'effort': effort,
                               'python_ast_valid': passed, 'usage': usage or None,
                               'subscription_credits': 'unknown'}))
             return 0 if passed else 2

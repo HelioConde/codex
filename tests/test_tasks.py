@@ -9,6 +9,15 @@ from proxy_ai.tasks import TaskPolicy, TaskRunner
 
 
 class TaskTests(unittest.TestCase):
+    def test_ultra_requires_cli_without_consuming_a_task_attempt(self):
+        client = ProxyClient('https://proxy.example.com', 'k' * 32)
+        runner = TaskRunner(client)
+        with patch.object(client, 'text', return_value=('ok', {'input_tokens': 1, 'output_tokens': 1})) as request:
+            with self.assertRaisesRegex(ProxyError, 'Codex CLI'):
+                runner.text('teste', tier='ultra', execute=True)
+            request.assert_not_called()
+            self.assertEqual(runner.text('teste', tier='code', execute=True)[0], 'ok')
+
     def test_no_authorization_no_request(self):
         runner = TaskRunner(ProxyClient('https://proxy.example.com', 'k' * 32))
         with patch.object(runner.client, 'text', side_effect=AssertionError('paid')):

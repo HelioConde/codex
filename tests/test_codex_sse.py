@@ -23,8 +23,14 @@ class CodexSSETests(unittest.TestCase):
     def test_real_cli_never_retries_auth_failure(self):
         self.exercise_cli(401)
 
-    def exercise_cli(self, status):
+    def test_real_cli_resolves_astra_ultra_using_native_catalog(self):
+        self.exercise_cli(200, tier='ultra')
+
+    def exercise_cli(self, status, tier='code'):
         requests = []
+        model = 'gpt-6-astra' if tier == 'ultra' else 'gpt-6.1-sol'
+        # CLI 0.166.0: Ultra resolves to Astra.multi_agent_reasoning_effort=xhigh.
+        effort = 'xhigh' if tier == 'ultra' else 'medium'
 
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, *args): pass
@@ -47,7 +53,7 @@ class CodexSSETests(unittest.TestCase):
                 message = {'id': 'msg_mock', 'type': 'message', 'role': 'assistant',
                            'status': 'completed', 'content': [{'type': 'output_text', 'text': 'MOCK_OK', 'annotations': []}]}
                 response = {'id': 'resp_mock', 'object': 'response', 'created_at': 1,
-                            'status': 'completed', 'model': 'gpt-6.1-sol', 'output': [message],
+                            'status': 'completed', 'model': model, 'output': [message],
                             'usage': {'input_tokens': 5, 'output_tokens': 2, 'total_tokens': 7}}
                 events = [
                     {'type': 'response.created', 'response': {**response, 'status': 'in_progress', 'output': []}},
@@ -74,12 +80,17 @@ class CodexSSETests(unittest.TestCase):
                 install_config(home / 'config.toml', 'http://127.0.0.1:' + str(server.server_port))
                 env = os.environ.copy()
                 env.update({'CODEX_HOME': str(home), 'CODEX_PROXY_API_KEY': 'offline-dummy-key-not-real'})
-                result = subprocess.run(
-                    [*launch_args('code', 'http://127.0.0.1:' + str(server.server_port)),
-                     'exec', '-p', 'vf_code', '--strict-config', '--ephemeral', '--json',
-                     '--skip-git-repo-check', '--sandbox', 'read-only', '-'],
-                    input=b'Respond MOCK_OK without tools.', capture_output=True,
-                    cwd=root, env=env, timeout=30)
+                try:
+                    result = subprocess.run(
+                        [*launch_args(tier, 'http://127.0.0.1:' + str(server.server_port)),
+                         'exec', '-p', 'vf_' + tier, '--strict-config', '--ephemeral', '--json',
+                         '--skip-git-repo-check', '--sandbox', 'read-only', '-'],
+                        input=b'Respond MOCK_OK without tools.', capture_output=True,
+                        cwd=root, env=env, timeout=30)
+                except subprocess.TimeoutExpired as error:
+                    # Only isolated test config, fake key and synthetic prompt are involved.
+                    self.fail(f'CLI timeout; mock_requests={len(requests)}; '
+                              + (error.stderr or b'').decode('utf-8', errors='replace')[-1500:])
                 if status == 200:
                     self.assertEqual(result.returncode, 0, result.stderr.decode('utf-8', errors='replace')[-2000:])
                     self.assertIn(b'MOCK_OK', result.stdout)
@@ -90,7 +101,12 @@ class CodexSSETests(unittest.TestCase):
                 self.assertTrue(route.startswith('/v1/responses'))
                 self.assertEqual(auth, 'Bearer offline-dummy-key-not-real')
                 self.assertTrue(payload['stream'])
-                self.assertEqual(payload['model'], 'gpt-6.1-sol')
+                self.assertEqual(payload['model'], model)
+                self.assertEqual(payload['reasoning']['effort'], effort)
+                if tier == 'ultra':
+                    # Native tool definitions may travel as incremental input items.
+                    self.assertTrue('spawn_agent' in json.dumps(payload),
+                                    'Ultra must expose native delegation tools')
         finally:
             server.shutdown()
             server.server_close()

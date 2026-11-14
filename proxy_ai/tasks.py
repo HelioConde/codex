@@ -67,6 +67,8 @@ class TaskRunner:
              execute: bool = False) -> tuple[str, dict]:
         if not execute:
             raise ProxyError('Requer execute=True para consumir cota.')
+        if tier == 'ultra':
+            raise ProxyError('Ultra requer orquestracao nativa do Codex CLI; use proxy_ai.codex_cli run --task ultra.')
         if tier not in TIERS:
             raise ProxyError('Classe de tarefa invalida.')
         if not isinstance(prompt, str) or not isinstance(instructions, str) or len(prompt) + len(instructions) > self.policy.max_input_chars:

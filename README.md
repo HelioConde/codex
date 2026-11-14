@@ -3,7 +3,7 @@
 Repositório de **ideias, pesquisas e ferramentas reais** sobre uso eficiente do Codex e do proxy de IA compartilhado com VideoForge-IA, para roteiros, planejamento, análise e geração de imagens.
 
 **Atualizado em:** 14/11/2026  
-**Status:** cliente Python, perfis globais Codex CLI 0.166.0, selecao economica e workflow manual implementados. Health/catalogo locais e inferencia real da CLI com Sol/low validados em 14/11/2026; detalhes e limites no guia tecnico. A produção de vídeo permanece no VideoForge-IA.
+**Status:** proxy integrado a CLI 0.166.0 com Astra/Ultra como padrao do lancador, conforme escolha do usuario. Inferencias reais com Astra/Ultra e Sol/low validadas em 14/11/2026; perfis economicos, limites e workflow manual disponiveis. A produção de vídeo permanece no VideoForge-IA.
 
 **Projeto principal de execução:** [VideoForge-IA](https://github.com/HelioConde/VideoForge-IA).  
 **Projeto relacionado:** [AutoEditorVideo](https://github.com/HelioConde/AutoEditorVideo).
@@ -49,7 +49,7 @@ python -m proxy_ai.codex_cli run --from-docker --task simple --execute
 python -m proxy_ai.codex_cli run --from-docker --task critical --execute
 ```
 
-`code` (padrao) usa Sol/medium; `complex`, Sol/high; `simple`, Luna/low; `critical`, Astra/high. Nao ha escalada automatica nem Ultrafast. O comando `codex` original preserva a configuracao anterior. `--fallback-original` autoriza usa-la somente se o preflight falhar, antes da sessao; uma sessao com erro nunca e repetida. Consulte [o guia e as evidencias](docs/10-codex-cli-proxy.md) para perfis, rollback, limites, metricas e teste real.
+`ultra` (padrao) usa Astra no modo Ultra nativo do Codex; `code`, Sol/medium; `complex`, Sol/high; `simple`, Luna/low; `critical`, Astra/high. Ultra inclui delegacao a subagentes; service tier permanece default. O provider original permanece disponivel; `.codex/config.toml` deste projeto seleciona Astra/Ultra. `--fallback-original` autoriza usar o provider original se o preflight falhar, antes da sessao; uma sessao com erro nunca e repetida. Consulte [o guia e as evidencias](docs/10-codex-cli-proxy.md) para perfis, rollback, limites, metricas e teste real.
 
 ## Índice de todas as ideias consolidadas
 
@@ -61,7 +61,7 @@ python -m proxy_ai.codex_cli run --from-docker --task critical --execute
 6. [Ferramentas, preços estimados e direitos](docs/05-ferramentas-custos-direitos.md) — ComfyUI, Pika, Runway, Kling, Wan, Luma, TTS, referências oficiais e simulações de custo.
 7. [Roadmap e validação](docs/06-roadmap-e-validacao.md) — prioridades, gates, critérios objetivos, custos e pontos ainda em aberto.
 8. [Pesquisa em comunidades: economias reais no Astra/Codex](docs/07-pesquisa-comunidades-economia-astra.md) — TokenEconomizer, Lattice, cache, logs, subagentes, configurações e plano de medição.
-9. [Configuração experimental Codex CLI](.codex/config.toml) — Sol por padrão e limites iniciais de subagentes e ferramentas.
+9. [Configuração Codex CLI](.codex/config.toml) — Astra/Ultra por escolha do usuario e limites iniciais de subagentes e ferramentas.
 10. [Resumo local de tokens Codex](scripts/resumo_codex.py) e [testes de validação](tests/test_resumo_codex.py) — auditoria offline de contadores JSONL sem enviar prompts para a rede.
 11. [Integração do proxy como IA de texto e imagem](docs/08-proxy-ia-texto-codex.md) — cliente, Codex CLI, GitHub Actions, credenciais e limites.
 12. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
@@ -71,7 +71,7 @@ python -m proxy_ai.codex_cli run --from-docker --task critical --execute
 
 ## Regras essenciais
 
-- **Modelo econômico primeiro** para pauta, pesquisa, roteiro, prompts, storyboard e metadados; Codex/Astra só para engenharia que realmente exija o modelo caro.
+- **Astra/Ultra como engenheiro principal**, por escolha explicita do usuario em 14/11/2026; modelos economicos disponiveis para tarefas auxiliares, com contexto minimo e verificacao deterministica.
 - **Não tratar Ultrafast como economia:** verificar tabela de créditos vigente e evitar modo caro por padrão.
 - **Não repetir trabalho ou conteúdo:** pesquisar histórico de cada canal, reaproveitar resultados e impedir vídeos/temas duplicados.
 - **Imagem aprovada → camadas consistentes → rig real → Remotion.** Não mover um PNG inteiro quando olhos, cabelo, capa ou braços devem ter movimentos próprios.

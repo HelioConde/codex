@@ -123,6 +123,13 @@ class ProxyAITests(unittest.TestCase):
             _, usage = client.text('teste')
         self.assertEqual(usage['cached_input_tokens'], 7)
 
+    def test_direct_client_does_not_misrepresent_ultra_orchestration(self):
+        client = ProxyClient('https://proxy.example.com', self.KEY)
+        with patch.object(client, '_json') as request:
+            with self.assertRaisesRegex(ProxyError, 'Codex CLI'):
+                client.text('teste', model='gpt-6-astra', effort='ultra')
+        request.assert_not_called()
+
     def test_health_and_models(self):
         client = ProxyClient("https://proxy.example.com", self.KEY)
         a = FakeOpener({"status": "ok", "accounts": 2})

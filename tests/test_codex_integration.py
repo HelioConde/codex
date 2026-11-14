@@ -37,6 +37,10 @@ class IntegrationTests(unittest.TestCase):
             self.assertEqual(profile['model'], 'gpt-6.1-sol')
             profile = tomllib.loads((path.parent / 'vf_critical.config.toml').read_text())
             self.assertEqual(profile['model'], 'gpt-6-astra')
+            profile = tomllib.loads((path.parent / 'vf_ultra.config.toml').read_text())
+            self.assertEqual(profile['model'], 'gpt-6-astra')
+            self.assertEqual(profile['model_reasoning_effort'], 'ultra')
+            self.assertEqual(profile['service_tier'], 'default')
             self.assertNotIn('profiles', config)
             self.assertEqual(config['model_providers']['videoforge_proxy']['request_max_retries'], 0)
             before = path.read_bytes()
@@ -91,13 +95,15 @@ class IntegrationTests(unittest.TestCase):
             base_url = 'http://127.0.0.1:8080'
             _api_key = 'k' * 32
             def health(self): return {'status': 'ok'}
-            def models(self): return ['gpt-6.1-sol']
+            def models(self): return ['gpt-6-astra']
         with patch.object(codex_cli, 'load_client', return_value=Client()):
             with patch.object(codex_cli.subprocess, 'call', return_value=9) as run:
                 self.assertEqual(codex_cli.main(['run', '--execute', '--fallback-original']), 9)
                 self.assertEqual(run.call_count, 1)
                 self.assertNotIn('k' * 32, ' '.join(run.call_args.args[0]))
                 self.assertEqual(run.call_args.kwargs['env']['CODEX_PROXY_API_KEY'], 'k' * 32)
+                self.assertIn('model="gpt-6-astra"', run.call_args.args[0])
+                self.assertIn('model_reasoning_effort="ultra"', run.call_args.args[0])
 
 
 if __name__ == '__main__':

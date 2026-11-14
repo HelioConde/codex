@@ -1,4 +1,4 @@
-# Configuração inicial conservadora para Codex CLI, por projeto.
+# Configuração Codex CLI por projeto: Astra/Ultra escolhido pelo usuario em 14/11/2026.
 # Fonte: https://learn.chatgpt.com/docs/config-file/config-reference
 # Pesquisa: https://github.com/HelioConde/codex/blob/main/docs/07-pesquisa-comunidades-economia-astra.md
 #
@@ -7,12 +7,14 @@
 # - O template para provider é GLOBAL do usuário e depende das credenciais locais.
 # - Não altera o proxy usado nos GitHub Actions nem custos de APIs de vídeo.
 # - Requer versões/modelos disponíveis na conta e projeto confiável na CLI.
-# - Astra Standard deve ser escolhido explicitamente para problemas difíceis.
+# - Em 14/11/2026 o usuario escolheu Astra com raciocinio Ultra como principal.
+# - Ultra aqui e reasoning effort; service tier permanece default (nao Ultrafast).
 # - Ultrafast não é modo econômico.
 # - Os limites abaixo são hipóteses para teste A/B, não economias comprovadas.
 
-model = "gpt-6.1-sol"
-model_reasoning_effort = "medium"
+model = "gpt-6-astra"
+model_reasoning_effort = "ultra"
+service_tier = "default"
 tool_output_token_limit = 8000
 
 [agents]

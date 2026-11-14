@@ -18,6 +18,7 @@ import uuid
 from .client import ProxyClient, ProxyError, normalize_base_url
 
 TIERS = {
+    'ultra': ('gpt-6-astra', 'ultra'),
     'simple': ('gpt-6-luna', 'low'),
     'code': ('gpt-6.1-sol', 'medium'),
     'complex': ('gpt-6.1-sol', 'high'),
@@ -161,7 +162,7 @@ def launch_args(tier: str, base_url: str) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description='Codex com perfis VideoForge (sem gerar por padrao)')
     parser.add_argument('action', choices=('check', 'install', 'run'))
-    parser.add_argument('--task', choices=TIERS, default='code')
+    parser.add_argument('--task', choices=TIERS, default='ultra')
     parser.add_argument('--base-url')
     parser.add_argument('--from-docker', action='store_true')
     parser.add_argument('--container', default='chatgpt-codex-proxy')
