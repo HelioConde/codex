@@ -48,6 +48,9 @@ Para usar o cliente localmente, configure CODEX_PROXY_BASE_URL e CODEX_PROXY_API
 11. [Integração do proxy como IA de texto e imagem](docs/08-proxy-ia-texto-codex.md) — cliente, Codex CLI, GitHub Actions, credenciais e limites.
 12. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
 
+
+**Sessão local do VideoForge:** para reutilizar as contas já autenticadas no Docker/backup do Windows, veja [importação segura no codex](docs/09-importar-sessao-local-videoforge.md) e execute `scripts/importar-sessao-videoforge.ps1` apenas no seu computador. O script salva Secrets no GitHub sem expor tokens, mas depende do estado local e não foi executado remotamente.
+
 ## Regras essenciais
 
 - **Modelo econômico primeiro** para pauta, pesquisa, roteiro, prompts, storyboard e metadados; Codex/Astra só para engenharia que realmente exija o modelo caro.
