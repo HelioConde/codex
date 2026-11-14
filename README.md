@@ -22,7 +22,9 @@ O foco desta documentação é **YouTube — imagens, personagens, rig 2D, anima
 5. [Manual principal de animação 2D com rig e Remotion](docs/04-animacao-rig-remotion.md) — cena-mãe, pixels originais, máscaras, articulação, cape/hair, Three.js, caso Anya e QA.
 6. [Ferramentas, preços estimados e direitos](docs/05-ferramentas-custos-direitos.md) — ComfyUI, Pika, Runway, Kling, Wan, Luma, TTS, referências oficiais e simulações de custo.
 7. [Roadmap e validação](docs/06-roadmap-e-validacao.md) — prioridades, gates, critérios objetivos, custos e pontos ainda em aberto.
-8. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
+8. [Pesquisa em comunidades: economias reais no Astra/Codex](docs/07-pesquisa-comunidades-economia-astra.md) — TokenEconomizer, Lattice, cache, logs, subagentes, configurações e plano de medição.
+9. [Configuração experimental Codex CLI](.codex/config.toml) — Sol por padrão e limites iniciais de subagentes e ferramentas.
+10. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
 
 ## Regras essenciais
 
