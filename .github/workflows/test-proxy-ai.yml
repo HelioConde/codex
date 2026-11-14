@@ -4,6 +4,7 @@ on:
     paths:
       - 'proxy_ai/**'
       - 'tests/**'
+      - 'scripts/configurar-proxy-existente.ps1'
       - '.github/workflows/test-proxy-ai.yml'
   pull_request:
     paths:
@@ -26,3 +27,13 @@ jobs:
           python-version: '3.12'
       - name: Testar sem chaves, sem rede e sem IA
         run: python -m unittest discover -s tests -v
+      - name: Validar sintaxe do script PowerShell sem usar credenciais
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile('scripts/configurar-proxy-existente.ps1', [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Host $_.Message }
+            throw 'Script PowerShell invalido'
+          }
