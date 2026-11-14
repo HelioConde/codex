@@ -1,9 +1,9 @@
 # Codex — estratégia de economia de IA e produção audiovisual para YouTube
 
-Repositório de **ideias, decisões e pesquisas** sobre o uso eficiente do Codex, GPT-6 Astra, múltiplas IAs e automação de imagens e vídeos para YouTube.
+Repositório de **ideias, pesquisas e ferramentas reais** sobre uso eficiente do Codex e do proxy de IA compartilhado com VideoForge-IA, para roteiros, planejamento, análise e geração de imagens.
 
 **Atualizado em:** 14/11/2026  
-**Status:** documentação estratégica; alterações de produção e testes devem ser verificadas nos projetos de origem.  
+**Status:** cliente Python de IA de texto/imagem e workflow manual implementados; conexão com credenciais reais ainda pendente de validação. A produção de vídeo permanece no VideoForge-IA.  
 **Projeto principal de execução:** [VideoForge-IA](https://github.com/HelioConde/VideoForge-IA).  
 **Projeto relacionado:** [AutoEditorVideo](https://github.com/HelioConde/AutoEditorVideo).
 
@@ -12,6 +12,18 @@ Repositório de **ideias, decisões e pesquisas** sobre o uso eficiente do Codex
 Criar conteúdo audiovisual de qualidade para YouTube **sem desperdiçar tokens, créditos ou gerações de mídia**. Dividir o trabalho entre IAs econômicas, modelos especializados, renderização determinística e Codex para engenharia complexa.
 
 O foco desta documentação é **YouTube — imagens, personagens, rig 2D, animação, vídeo, roteiros, agentes e automação**, e não um projeto de jogo.
+
+## Proxy IA do VideoForge no Codex
+
+O diretório [proxy_ai](proxy_ai) implementa chamadas de **IA de texto pela rota `/v1/responses`**, imagens, saúde e catálogo de modelos. Não reimplementa nem duplica o servidor: reutiliza o proxy existente. Somente `--execute` autoriza chamadas gerativas.
+
+```powershell
+python -m proxy_ai health
+python -m proxy_ai models
+python -m proxy_ai text --prompt-file outputs/brief.txt --execute
+```
+
+Para executar, configure localmente `CODEX_PROXY_BASE_URL` e `CODEX_PROXY_API_KEY` e leia o [guia de integração](docs/08-proxy-ia-texto-codex.md). O [workflow manual do GitHub](.github/workflows/proxy-ia-manual.yml) também oferece texto/imagens após configurar Secrets no repo `codex`. É possível usar o proxy como provider na CLI Codex por meio do [template de configuração global](config/codex-proxy.user.toml.example), sem inserir chaves no repositório. **O cliente Python usa modelos e cotas reais da conta; não fornece acesso ilimitado.**
 
 ## Índice de todas as ideias consolidadas
 
@@ -25,7 +37,8 @@ O foco desta documentação é **YouTube — imagens, personagens, rig 2D, anima
 8. [Pesquisa em comunidades: economias reais no Astra/Codex](docs/07-pesquisa-comunidades-economia-astra.md) — TokenEconomizer, Lattice, cache, logs, subagentes, configurações e plano de medição.
 9. [Configuração experimental Codex CLI](.codex/config.toml) — Sol por padrão e limites iniciais de subagentes e ferramentas.
 10. [Resumo local de tokens Codex](scripts/resumo_codex.py) e [testes de validação](tests/test_resumo_codex.py) — auditoria offline de contadores JSONL sem enviar prompts para a rede.
-11. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
+11. [Integração do proxy como IA de texto e imagem](docs/08-proxy-ia-texto-codex.md) — cliente, Codex CLI, GitHub Actions, credenciais e limites.
+12. [AGENTS.md](AGENTS.md) — instruções que agentes devem ler antes de consultar ou alterar estes registros.
 
 ## Regras essenciais
 
