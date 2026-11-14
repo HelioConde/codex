@@ -89,7 +89,7 @@ function Read-HiddenKey() {
 
 function Set-ActionSecret([string] $GhPath, [string] $Name, [string] $Value) {
     if ([string]::IsNullOrEmpty($Value)) { throw "Valor de $Name nao pode estar vazio." }
-    $startInfo = New-Object Diagnostics.ProcessStartInfo
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
     $startInfo.FileName = $GhPath
     $startInfo.Arguments = "secret set $Name --repo HelioConde/codex --app actions"
     $startInfo.UseShellExecute = $false
@@ -98,11 +98,13 @@ function Set-ActionSecret([string] $GhPath, [string] $Name, [string] $Value) {
     $startInfo.RedirectStandardOutput = $true
     $startInfo.RedirectStandardError = $true
 
-    $p = New-Object Diagnostics.Process
+    $p = New-Object System.Diagnostics.Process
     $p.StartInfo = $startInfo
+    $started = $false
     try {
         if (-not $p.Start()) { throw 'Nao foi possivel iniciar gh.' }
-        $enc = New-Object Text.UTF8Encoding($false)
+        $started = $true
+        $enc = New-Object System.Text.UTF8Encoding($false)
         $bytes = $enc.GetBytes($Value)
         try {
             $p.StandardInput.BaseStream.Write($bytes, 0, $bytes.Length)
@@ -117,7 +119,7 @@ function Set-ActionSecret([string] $GhPath, [string] $Name, [string] $Value) {
             throw "Falha ao salvar $Name; confira autenticacao e permissao Actions Secrets."
         }
     } finally {
-        if ($p.Id -gt 0 -and -not $p.HasExited) { $p.Kill() }
+        if ($started -and -not $p.HasExited) { $p.Kill() }
         $p.Dispose()
     }
 }
@@ -141,7 +143,7 @@ try {
     } else {
         $apiKey = Read-HiddenKey
     }
-    if ($apiKey.Length -lt 20 -or $apiKey.Contains([char]13) -or $apiKey.Contains([char]10)) {
+    if ($apiKey.Length -lt 20 -or $apiKey.IndexOf([char]13) -ge 0 -or $apiKey.IndexOf([char]10) -ge 0) {
         throw 'Chave ausente ou invalida; nenhum Secret foi salvo.'
     }
 
