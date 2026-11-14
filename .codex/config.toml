@@ -3,7 +3,9 @@
 # Pesquisa: https://github.com/HelioConde/codex/blob/main/docs/07-pesquisa-comunidades-economia-astra.md
 #
 # IMPORTANTE:
-# - Não configura o Codex Proxy usado nos GitHub Actions nem custos de APIs de vídeo.
+# - Este arquivo não cadastra o proxy como provider; consulte config/codex-proxy.user.toml.example
+# - O template para provider é GLOBAL do usuário e depende das credenciais locais.
+# - Não altera o proxy usado nos GitHub Actions nem custos de APIs de vídeo.
 # - Requer versões/modelos disponíveis na conta e projeto confiável na CLI.
 # - Astra Standard deve ser escolhido explicitamente para problemas difíceis.
 # - Ultrafast não é modo econômico.
