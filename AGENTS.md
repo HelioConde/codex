@@ -1,6 +1,6 @@
 # Orientações para agentes — repositório codex
 
-Este repositório guarda **documentação estratégica** sobre economia de tokens/créditos, uso de múltiplas IAs e produção de vídeos para YouTube. A implementação técnica fica nos projetos relacionados, especialmente [VideoForge-IA](https://github.com/HelioConde/VideoForge-IA).
+Este repositório documenta economia de tokens e **implementa um cliente Python reutilizável** de IA de texto e imagem para o mesmo proxy do [VideoForge-IA](https://github.com/HelioConde/VideoForge-IA). O pipeline audiovisual continua no VideoForge-IA.
 
 ## Antes de executar qualquer tarefa
 
@@ -13,7 +13,9 @@ Este repositório guarda **documentação estratégica** sobre economia de token
 7. Não iniciar chamadas de IA paga, contratar APIs nem criar workflows com cobrança recorrente sem política de custo e autorização.
 8. Não usar Astra/Ultrafast para tarefas rotineiras; modelo barato + testes determinísticos primeiro.
 9. Não substituir **animação articulada** por movimentação do PNG inteiro quando a especificação exige rig.
-10. Em uma alteração: preservar links e decisões anteriores; acrescentar data, fonte e justificativa; validar Markdown e referências.
+10. As chamadas de `proxy_ai text` e `proxy_ai image` somente ocorrem com `--execute`; não gerar conteúdo em CI/push ou testes.
+11. O proxy não é API oficial do Codex; respeitar autorização e limites, não usar contas de terceiros, não automatizar reintentos após HTTP 429.
+12. Em uma alteração: preservar links e decisões anteriores; acrescentar data, fonte e justificativa; validar Markdown e referências.
 
 ## Documentos
 
@@ -25,4 +27,6 @@ Este repositório guarda **documentação estratégica** sobre economia de token
 - [05 — Ferramentas, custos e direitos](docs/05-ferramentas-custos-direitos.md)
 - [06 — Roadmap e validação](docs/06-roadmap-e-validacao.md)
 - [07 — Pesquisa em repositórios e comunidades sobre economia Astra](docs/07-pesquisa-comunidades-economia-astra.md)
+- [08 — Integrar IA de texto e imagem via proxy VideoForge](docs/08-proxy-ia-texto-codex.md)
 - [Configuração experimental Codex CLI](.codex/config.toml)
+- [Template global para usar proxy como provider Codex](config/codex-proxy.user.toml.example)
